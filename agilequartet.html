@@ -1,0 +1,1951 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Monthly Backlog</title>
+    <style>
+      :root {
+        --bg: #000;
+        --fg: #fff;
+        --muted: #bdbdbd;
+        --primary: #4caf50;
+        --primary-600: #43a047;
+        --danger: #ef4444;
+        --card: #101010;
+        --border: #262626;
+        --input: #0f0f0f;
+        --warn-bg: #1a0000;
+        --yellow: #eab308;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu,
+          Cantarell, Noto Sans, sans-serif;
+        line-height: 1.35;
+        overflow-x: hidden;
+      }
+
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: linear-gradient(
+          180deg,
+          rgba(0, 0, 0, 0.9),
+          rgba(0, 0, 0, 0.65)
+        );
+        border-bottom: 1px solid var(--border);
+      }
+      .wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 12px 14px;
+      }
+      .title-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      h1 {
+        margin: 0;
+        font-size: 20px;
+        letter-spacing: 0.3px;
+      }
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      select,
+      input[type="text"] {
+        background: var(--input);
+        color: var(--fg);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 6px 9px;
+        outline: none;
+        min-width: 120px;
+        font-size: 13px;
+      }
+      .btn {
+        background: #161616;
+        color: var(--fg);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 7px 11px;
+        cursor: pointer;
+        transition: transform 0.05s, background 0.2s;
+        font-size: 13px;
+      }
+      .btn:hover {
+        background: #141414;
+      }
+      .btn:active {
+        transform: scale(0.98);
+      }
+      .btn-primary {
+        background: var(--primary);
+        border-color: transparent;
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: var(--primary-600);
+      }
+      .btn-ghost {
+        background: transparent;
+        border: 1px dashed var(--border);
+        color: var(--muted);
+      }
+      .btn-danger {
+        background: var(--danger);
+        border-color: transparent;
+        color: #fff;
+      }
+      .btn-danger:hover {
+        filter: brightness(0.95);
+      }
+      .btn-tiny {
+        padding: 4px 6px;
+        font-size: 11px;
+        border-radius: 8px;
+      }
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 2px 6px;
+        border-radius: 999px;
+        font-size: 10.5px;
+        background: #141414;
+        border: 1px solid var(--border);
+        color: var(--muted);
+      }
+
+      .dashboard {
+        max-width: 1180px;
+        margin: 8px auto;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        padding: 0 14px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 8px 10px;
+      }
+      .card h3 {
+        margin: 0 0 3px 0;
+        font-size: 11.5px;
+        color: var(--muted);
+        font-weight: 600;
+      }
+      .stat {
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      .legend {
+        max-width: 1180px;
+        margin: 0 auto 4px;
+        padding: 0 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .legend .title {
+        opacity: 0.9;
+      }
+      .pill {
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        border: 1px solid transparent;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        user-select: none;
+      }
+      .pill-green {
+        background: var(--primary);
+        color: #fff;
+      }
+      .pill-red {
+        background: var(--danger);
+        color: #fff;
+      }
+      .pill.active {
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08) inset;
+      }
+
+      main .grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        padding: 8px 18px 16px;
+        max-width: 1180px;
+        margin: 0 auto;
+        min-width: 0;
+      }
+      .week {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-height: 300px;
+        min-width: 0;
+      }
+      .week-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        border-bottom: 1px dashed var(--border);
+        padding-bottom: 6px;
+      }
+      .week-title {
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        font-size: 13px;
+      }
+      .week-actions {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .add-row {
+        font-size: 11.5px;
+        padding: 5px 8px;
+      }
+      .alert {
+        background: var(--warn-bg);
+        border: 1px solid var(--danger);
+        border-radius: 10px;
+        padding: 6px 8px;
+        font-size: 12px;
+        color: #ffd6d6;
+      }
+
+      .task {
+        display: grid;
+        grid-template-columns: 12px repeat(5, minmax(90px, 1fr)) 56px;
+        gap: 6px;
+        align-items: center;
+        padding: 6px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: #0d0d0d;
+        font-size: 12px;
+        min-width: 0;
+      }
+      .task select,
+      .task input[type="text"] {
+        width: 100%;
+        min-width: 0;
+        font-size: 11.5px;
+        padding: 6px 26px 6px 8px;
+        background: var(--input);
+        color: var(--fg);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+      }
+      .task input::placeholder {
+        color: #cfcfcf;
+        opacity: 0.9;
+      }
+      .indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        border: 1px solid #000;
+      }
+      .dot-green {
+        background: var(--primary);
+      }
+      .dot-red {
+        background: var(--danger);
+      }
+      .task .actions {
+        display: flex;
+        gap: 6px;
+        justify-content: flex-end;
+      }
+      .task .actions .icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #131313;
+      }
+      .task .actions .icon[disabled] {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      .task.ghost {
+        opacity: 0.75;
+      }
+      .task.ghost .btn[disabled] {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      /* Visual hints */
+      .sla-breach {
+        outline: 1px solid rgba(239, 68, 68, 0.8);
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+      }
+      .dup {
+        outline: 1px solid rgba(234, 179, 8, 0.9);
+        box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.12);
+      }
+
+      /* Tooltip */
+      [data-tooltip] {
+        position: relative;
+      }
+      [data-tooltip]::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 130%;
+        white-space: nowrap;
+        pointer-events: none;
+        background: #111;
+        color: #fff;
+        border: 1px solid var(--border);
+        padding: 6px 8px;
+        border-radius: 8px;
+        font-size: 12px;
+        opacity: 0;
+        transition: opacity 0.15s;
+      }
+      [data-tooltip]:hover::after {
+        opacity: 1;
+      }
+
+      /* Modals */
+      .overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+      }
+      .modal {
+        background: #0f0f0f;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px;
+        max-width: 940px;
+        width: 95vw;
+        color: var(--fg);
+      }
+      .modal h2 {
+        margin: 0 0 8px 0;
+        font-size: 16px;
+      }
+      .modal .row {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 6px;
+        align-items: center;
+      }
+      .modal .hdr {
+        font-size: 11px;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      .modal .footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .hidden {
+        display: none;
+      }
+      .danger {
+        color: #ffb3b3;
+      }
+      .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono",
+          monospace;
+        font-size: 12px;
+        background: #0b0b0b;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 8px;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="wrap">
+        <div class="title-row">
+          <h1>Monthly Backlog</h1>
+          <span class="tag">Black background · White text</span>
+        </div>
+
+        <div class="controls" role="group" aria-label="Top controls">
+          <label class="tiny"
+            >Month
+            <select id="monthSelect" title="Select the working month"></select>
+          </label>
+
+          <label class="tiny"
+            >Board
+            <select id="filterBoard" title="Filter by board">
+              <option value="All">All Boards</option>
+            </select>
+            <button id="addBoardBtn" class="btn tiny" title="Add a new board">
+              + Board
+            </button>
+          </label>
+
+          <label class="tiny"
+            >Priority
+            <select id="filterPriority" title="Filter by priority">
+              <option value="All">All Priorities</option>
+              <option>High</option>
+              <option>Medium</option>
+              <option>Low</option>
+            </select>
+          </label>
+
+          <label class="tiny"
+            >Status
+            <select id="filterStatus" title="Filter by status">
+              <option value="All">All Status</option>
+              <option>Not Done</option>
+              <option>Done</option>
+            </select>
+          </label>
+
+          <label class="tiny"
+            >Close Week
+            <select id="closeWeekSelect" title="Choose which week to close">
+              <option value="1">Week 1 → 2</option>
+              <option value="2">Week 2 → 3</option>
+              <option value="3">Week 3 → 4</option>
+            </select>
+          </label>
+          <button
+            id="closeWeekBtn"
+            class="btn btn-primary"
+            title="Preview & close the selected week"
+          >
+            Close Week
+          </button>
+          <button
+            id="undoCloseBtn"
+            class="btn btn-ghost"
+            title="Undo last Close Week"
+            disabled
+          >
+            Undo Close
+          </button>
+
+          <button
+            id="overflowReviewBtn"
+            class="btn btn-danger"
+            title="Review all overflow (🔴) tasks"
+          >
+            Overflow Review
+          </button>
+          <button
+            id="manageCapacityBtn"
+            class="btn"
+            title="Set weekly capacity (points) per Dev"
+          >
+            Dev Capacity
+          </button>
+          <button
+            id="setJiraBaseBtn"
+            class="btn"
+            title="Set Jira base URL for links"
+          >
+            Jira Base
+          </button>
+
+          <button
+            id="closeMonthBtn"
+            class="btn"
+            title="Close the month and archive finished tasks"
+          >
+            Close Month
+          </button>
+          <button id="exportCsvBtn" class="btn" title="Export all tasks as CSV">
+            Export CSV
+          </button>
+          <button
+            id="exportDoneCsvBtn"
+            class="btn"
+            title="Export only completed tasks as CSV"
+          >
+            Export Done CSV
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="dashboard">
+        <div class="card">
+          <h3>Completion Rate</h3>
+          <div class="stat" id="statCompletion">0%</div>
+        </div>
+        <div class="card">
+          <h3>By Priority (Done)</h3>
+          <div class="stat" id="statPriority">H:0 · M:0 · L:0</div>
+        </div>
+        <div class="card">
+          <h3>By Board (Done)</h3>
+          <div class="stat" id="statBoard">-</div>
+        </div>
+        <div class="card">
+          <h3>By Week (Done)</h3>
+          <div class="stat" id="statWeek">W1:0 · W2:0 · W3:0 · W4:0</div>
+        </div>
+      </section>
+
+      <div class="legend">
+        <span class="title">Caption:</span>
+        <span
+          class="pill pill-green filter-pill"
+          data-indicator="green"
+          title="Rolled over from previous week"
+          >rollover</span
+        >
+        <span
+          class="pill pill-red filter-pill"
+          data-indicator="red"
+          title="Overflow: could not fit next week"
+          >overflow</span
+        >
+      </div>
+
+      <section class="grid" id="weeksGrid" aria-live="polite"></section>
+    </main>
+
+    <!-- Overflow Review Modal -->
+    <div class="overlay" id="overflowOverlay">
+      <div class="modal">
+        <h2>Overflow Review</h2>
+        <div class="hdr row">
+          <div>Jira ID</div>
+          <div>Dev</div>
+          <div>Board</div>
+          <div>Priority</div>
+          <div>Week</div>
+          <div>Actions</div>
+        </div>
+        <div
+          id="overflowList"
+          style="max-height: 55vh; overflow: auto; margin-bottom: 8px"
+        ></div>
+        <div class="footer">
+          <button class="btn" id="closeOverflow">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Capacity Modal -->
+    <div class="overlay" id="capacityOverlay">
+      <div class="modal">
+        <h2>Dev Capacity (points / week)</h2>
+        <div
+          style="
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+          "
+        >
+          <label
+            >Apply to:
+            <select id="capWeekSelect">
+              <option value="all">All weeks (default)</option>
+              <option value="1">Week 1</option>
+              <option value="2">Week 2</option>
+              <option value="3">Week 3</option>
+              <option value="4">Week 4</option>
+            </select>
+          </label>
+        </div>
+        <div
+          id="capacityList"
+          style="
+            display: grid;
+            grid-template-columns: 1fr 120px 80px;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+          "
+        ></div>
+        <div class="footer">
+          <button class="btn" id="addDevRow">+ Add Dev</button>
+          <button class="btn btn-primary" id="saveCapacity">Save</button>
+          <button class="btn" id="closeCapacity">Close</button>
+        </div>
+        <div class="danger" style="font-size: 12px">
+          Points per priority: High=5 · Medium=3 · Low=1.
+        </div>
+      </div>
+    </div>
+
+    <!-- Close Preview / Summary Modal -->
+    <div class="overlay" id="previewOverlay">
+      <div class="modal">
+        <h2 id="previewTitle">Close Week Preview</h2>
+        <div
+          id="previewContent"
+          class="mono"
+          style="max-height: 55vh; overflow: auto; margin-bottom: 8px"
+        ></div>
+        <div class="footer">
+          <button class="btn" id="copySummaryBtn" style="display: none">
+            Copy Summary
+          </button>
+          <button class="btn btn-primary" id="confirmCloseBtn">
+            Confirm & Close
+          </button>
+          <button class="btn" id="cancelCloseBtn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* ===== Utils ===== */
+      const esc = (s) =>
+        String(s).replace(
+          /[&<>"']/g,
+          (m) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            }[m])
+        );
+      const today = () => new Date();
+      function daysBetween(a, b) {
+        const MS = 86400000;
+        return Math.floor(
+          (Date.UTC(a.getFullYear(), a.getMonth(), a.getDate()) -
+            Date.UTC(b.getFullYear(), b.getMonth(), b.getDate())) /
+            MS
+        );
+      }
+      function clamp(n, min, max) {
+        return Math.max(min, Math.min(max, n));
+      }
+      const JIRA_ID_RE = /^[A-Z][A-Z0-9]+-\d+$/i;
+
+      /* ===== State ===== */
+      const STORAGE_KEY = "monthly-backlog-en-v14";
+      const MAX_PER_WEEK = 12;
+      const WEEKS = [1, 2, 3, 4];
+      const FIXED_BOARDS = ["Affiliate", "MP", "Revamp A", "Revamp B", "HLTV"];
+      const PRIORITY_RANK = {
+        High: 3,
+        Medium: 2,
+        Low: 1,
+        "": 0,
+        undefined: 0,
+        null: 0,
+      };
+      const POINTS = { High: 5, Medium: 3, Low: 1, "": 0 };
+      const SLA_DAYS = { High: 7, Medium: 14, Low: 28 }; // (1)
+
+      const state = {
+        currentMonth: (() => {
+          const now = new Date(),
+            names = [
+              "January",
+              "February",
+              "March",
+              "April",
+              "May",
+              "June",
+              "July",
+              "August",
+              "September",
+              "October",
+              "November",
+              "December",
+            ],
+            snapYear = Math.min(2028, Math.max(2025, now.getFullYear()));
+          return `${names[now.getMonth()]} ${snapYear}`;
+        })(),
+        tasks: [],
+        boards: [...FIXED_BOARDS],
+        filters: { board: "All", priority: "All", status: "All" },
+        indicatorFilter: "all", // all | green | red
+        devCapacity: {}, // default per dev
+        devCapacityOverrides: {}, // {month:{week:{dev:cap}}}  (3)
+        jiraBase: "", // (10)
+        historyByMonth: {},
+        _undoSnapshot: null, // (2) undo
+      };
+
+      /* ===== Months 2025–2028 ===== */
+      const monthsEN = (() => {
+        const n = [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
+          ],
+          res = [];
+        for (let y = 2025; y <= 2028; y++)
+          for (let m = 0; m < 12; m++) res.push(`${n[m]} ${y}`);
+        return res;
+      })();
+      function renderMonthSelect() {
+        if (!monthsEN.includes(state.currentMonth)) {
+          const now = new Date(),
+            n = [
+              "January",
+              "February",
+              "March",
+              "April",
+              "May",
+              "June",
+              "July",
+              "August",
+              "September",
+              "October",
+              "November",
+              "December",
+            ],
+            y = Math.min(2028, Math.max(2025, now.getFullYear()));
+          state.currentMonth = `${n[now.getMonth()]} ${y}`;
+        }
+        monthSelect.innerHTML = monthsEN
+          .map(
+            (m) =>
+              `<option value="${esc(m)}"${
+                m === state.currentMonth ? " selected" : ""
+              }>${esc(m)}</option>`
+          )
+          .join("");
+      }
+
+      /* ===== Persistence & Migration ===== */
+      function load() {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        try {
+          const obj = JSON.parse(raw);
+          Object.assign(state, obj);
+          migratePMtoMP(state);
+          reviveDates();
+        } catch (e) {
+          console.warn("Failed to parse storage", e);
+        }
+      }
+      function persist() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      }
+      function migratePMtoMP(s) {
+        if (s.filters?.board === "PM") s.filters.board = "MP";
+        s.boards = Array.from(new Set([...(s.boards || [])])).map((b) =>
+          b === "PM" ? "MP" : b
+        );
+        s.boards = Array.from(new Set([...FIXED_BOARDS, ...s.boards]));
+        (s.tasks || []).forEach((t) => {
+          if (t.board === "PM") t.board = "MP";
+        });
+        for (const k in s.historyByMonth || {}) {
+          const pack = s.historyByMonth[k];
+          (pack.tasks || []).forEach((t) => {
+            if (t.board === "PM") t.board = "MP";
+          });
+        }
+      }
+      function reviveDates() {
+        state.tasks = (state.tasks || []).map((t) => ({
+          ...t,
+          createdAt: new Date(t.createdAt),
+        }));
+        for (const k in state.historyByMonth) {
+          const pack = state.historyByMonth[k];
+          if (pack && Array.isArray(pack.tasks)) {
+            pack.tasks = pack.tasks.map((t) => ({
+              ...t,
+              createdAt: new Date(t.createdAt),
+            }));
+          }
+        }
+      }
+
+      /* ===== DOM refs ===== */
+      const gridEl = document.getElementById("weeksGrid");
+      const monthSelect = document.getElementById("monthSelect");
+      const filterBoard = document.getElementById("filterBoard");
+      const filterPriority = document.getElementById("filterPriority");
+      const filterStatus = document.getElementById("filterStatus");
+      const statCompletion = document.getElementById("statCompletion");
+      const statPriority = document.getElementById("statPriority");
+      const statBoard = document.getElementById("statBoard");
+      const statWeek = document.getElementById("statWeek");
+      const addBoardBtn = document.getElementById("addBoardBtn");
+      const closeWeekSelect = document.getElementById("closeWeekSelect");
+      const undoCloseBtn = document.getElementById("undoCloseBtn");
+
+      /* ===== Boards & Capacity ===== */
+      function ensureBoardOptions() {
+        state.boards = Array.from(new Set([...FIXED_BOARDS, ...state.boards]));
+        filterBoard.innerHTML =
+          `<option value="All">All Boards</option>` +
+          state.boards
+            .map(
+              (b) =>
+                `<option value="${esc(b)}"${
+                  state.filters.board === b ? " selected" : ""
+                }>${esc(b)}</option>`
+            )
+            .join("");
+      }
+      function addBoardFlow(defaultAssignTask = null) {
+        let name = (prompt("New board name:") || "").trim();
+        if (!name) return null;
+        name = name.replace(/\s+/g, " ").slice(0, 40);
+        const exists = state.boards.some(
+          (b) => b.toLowerCase() === name.toLowerCase()
+        );
+        if (!exists) state.boards.push(name);
+        ensureBoardOptions();
+        if (defaultAssignTask) {
+          defaultAssignTask.board =
+            state.boards.find((b) => b.toLowerCase() === name.toLowerCase()) ||
+            name;
+        }
+        fullRender();
+        return name;
+      }
+      function overrideKey(month, week) {
+        return `${month}__${week}`;
+      }
+      function getDevCap(dev, week) {
+        const d = (dev || "").trim() || "Unassigned";
+        const ov = (state.devCapacityOverrides[state.currentMonth]?.[week] ||
+          {})[d];
+        if (ov != null) return Number(ov);
+        return Number(
+          state.devCapacity[d] ?? state.devCapacity["*default*"] ?? 10
+        );
+      }
+
+      /* ===== Helpers: aging, duplicates, sla ===== */
+      function weeksOpen(t) {
+        return Math.floor(daysBetween(today(), t.createdAt || today()) / 7);
+      }
+      function ageDays(t) {
+        return daysBetween(today(), t.createdAt || today());
+      }
+      function priorityRankWithBoost(t) {
+        const base = PRIORITY_RANK[t.priority] || 0;
+        if (t.priority === "Low" && weeksOpen(t) >= 3)
+          return PRIORITY_RANK["Medium"]; // (8) anti-starvation
+        return base;
+      }
+      function duplicatesSet() {
+        const set = new Map(); // norm -> count
+        state.tasks
+          .filter((t) => t.month === state.currentMonth)
+          .forEach((t) => {
+            const norm = (t.title || "").trim().toUpperCase();
+            if (!norm) return;
+            set.set(norm, (set.get(norm) || 0) + 1);
+          });
+        const dups = new Set();
+        for (const [k, v] of set) if (v > 1) dups.add(k);
+        return dups;
+      }
+
+      /* ===== Rendering ===== */
+      function selectBoardHTML(t) {
+        const ph = !t.board ? " selected" : "";
+        return `<select data-field="board" title="Task board">
+      <option value=""${ph}>Board</option>
+      ${state.boards
+        .map(
+          (b) =>
+            `<option value="${esc(b)}"${t.board === b ? " selected" : ""}>${esc(
+              b
+            )}</option>`
+        )
+        .join("")}
+      <option value="__add__">➕ Add board…</option>
+    </select>`;
+      }
+      function selectPriorityHTML(t) {
+        const ph = !t.priority ? " selected" : "";
+        return `<select data-field="priority" title="Task priority">
+      <option value=""${ph}>Priority</option>
+      <option${t.priority === "High" ? " selected" : ""}>High</option>
+      <option${t.priority === "Medium" ? " selected" : ""}>Medium</option>
+      <option${t.priority === "Low" ? " selected" : ""}>Low</option>
+    </select>`;
+      }
+      function selectStatusHTML(t) {
+        const ph = !t.status ? " selected" : "";
+        return `<select data-field="status" title="Task status">
+      <option value=""${ph}>Status</option>
+      <option${t.status === "Not Done" ? " selected" : ""}>Not Done</option>
+      <option${t.status === "Done" ? " selected" : ""}>Done</option>
+    </select>`;
+      }
+
+      function taskRow(t, dups) {
+        const indicatorClass =
+          t.rolloverStatus === "green"
+            ? "dot-green"
+            : t.rolloverStatus === "red"
+            ? "dot-red"
+            : "";
+        const tooltip =
+          t.rolloverStatus === "green"
+            ? "Rolled over from previous week"
+            : t.rolloverStatus === "red"
+            ? "Overflow: could not fit next week"
+            : "";
+
+        const slaDays = SLA_DAYS[t.priority || ""] || Infinity;
+        const aDays = ageDays(t);
+        const slaBreach = t.status !== "Done" && aDays > slaDays;
+        const dup = dups.has((t.title || "").trim().toUpperCase());
+
+        const jiraLink =
+          state.jiraBase && JIRA_ID_RE.test((t.title || "").trim())
+            ? `${state.jiraBase.replace(/\/?$/, "/")}${(t.title || "").trim()}`
+            : null;
+
+        const boost =
+          t.priority === "Low" && weeksOpen(t) >= 3 ? " (boosted)" : "";
+
+        return `
+  <div class="task" data-id="${esc(t.id)}" ${
+          boost ? 'data-tooltip="Anti-starvation boost applied"' : ""
+        }>
+    <span class="indicator ${indicatorClass}" title="${esc(
+          tooltip
+        )}" aria-label="${esc(tooltip)}"></span>
+    <input type="text" placeholder="Jira ID" value="${esc(
+      t.title || ""
+    )}" data-field="title"
+      class="${slaBreach ? "sla-breach" : ""} ${dup ? "dup" : ""}"
+      title="${slaBreach ? `SLA breach (${aDays}d > ${slaDays}d). ` : ""}${
+          dup ? "Duplicate Jira ID in this month. " : ""
+        }${boost ? "Boosted for fairness." : ""}" />
+    <input type="text" placeholder="Dev" value="${esc(
+      t.dev || ""
+    )}" data-field="dev" />
+    ${selectBoardHTML(t)}
+    ${selectPriorityHTML(t)}
+    ${selectStatusHTML(t)}
+    <div class="actions">
+      <a class="icon open-jira" ${
+        jiraLink
+          ? `href="${esc(jiraLink)}" target="_blank" title="Open in Jira"`
+          : 'title="Set Jira Base to enable link"'
+      } ${jiraLink ? "" : "disabled"}>↗</a>
+      <button class="icon" data-action="delete" title="Delete task">✕</button>
+    </div>
+  </div>`;
+      }
+
+      function ghostRow(week) {
+        return `
+  <div class="task ghost" data-week="${week}">
+    <span class="indicator"></span>
+    <input type="text" placeholder="Jira ID" data-field="title" />
+    <input type="text" placeholder="Dev" data-field="dev" />
+    <select data-field="board" title="Task board">
+      <option value="" selected>Board</option>
+      ${state.boards
+        .map((b) => `<option value="${esc(b)}">${esc(b)}</option>`)
+        .join("")}
+      <option value="__add__">➕ Add board…</option>
+    </select>
+    <select data-field="priority" title="Task priority">
+      <option value="" selected>Priority</option>
+      <option>High</option><option>Medium</option><option>Low</option>
+    </select>
+    <select data-field="status" title="Task status">
+      <option value="" selected>Status</option>
+      <option>Not Done</option><option>Done</option>
+    </select>
+    <div class="actions">
+      <button class="icon" data-action="delete" title="Delete task" disabled>✕</button>
+    </div>
+  </div>`;
+      }
+
+      function buildWeekAlerts(week, tasks) {
+        const alerts = [];
+        if (tasks.length > MAX_PER_WEEK) {
+          alerts.push(
+            `⚠️ ${tasks.length}/${MAX_PER_WEEK} tasks — risk of overflow when closing`
+          );
+        }
+        // capacity per dev
+        const loadByDev = {};
+        for (const t of tasks) {
+          const dev = (t.dev || "").trim() || "Unassigned";
+          loadByDev[dev] =
+            (loadByDev[dev] || 0) + (POINTS[t.priority || ""] || 0);
+        }
+        for (const dev in loadByDev) {
+          const used = loadByDev[dev],
+            cap = getDevCap(dev, week);
+          if (used > cap)
+            alerts.push(`⚠️ ${dev}: ${used}/${cap} pts (W${week})`);
+        }
+        if (!alerts.length) return "";
+        return `<div class="alert">${alerts.join(" · ")}</div>`;
+      }
+
+      function renderWeeks() {
+        const byWeek = { 1: [], 2: [], 3: [], 4: [] };
+        const fB = filterBoard.value,
+          fP = filterPriority.value,
+          fS = filterStatus.value,
+          fI = state.indicatorFilter;
+
+        const dups = duplicatesSet();
+
+        state.tasks
+          .filter((t) => !t.month || t.month === state.currentMonth)
+          .filter((t) => fB === "All" || t.board === fB)
+          .filter((t) => fP === "All" || t.priority === fP)
+          .filter((t) => fS === "All" || t.status === fS)
+          .filter((t) => fI === "all" || t.rolloverStatus === fI)
+          .forEach((t) => {
+            if (WEEKS.includes(t.plannedWeek)) byWeek[t.plannedWeek].push(t);
+          });
+
+        gridEl.innerHTML = WEEKS.map((week) => {
+          const realRows = byWeek[week].map((t) => taskRow(t, dups)).join("");
+          const ghosts =
+            state.indicatorFilter === "all"
+              ? Array.from({
+                  length: Math.max(0, MAX_PER_WEEK - byWeek[week].length),
+                })
+                  .map(() => ghostRow(week))
+                  .join("")
+              : "";
+          const alertHtml = buildWeekAlerts(week, byWeek[week]);
+          // duplicate count in this week
+          const dupCount = byWeek[week].filter((t) =>
+            dups.has((t.title || "").trim().toUpperCase())
+          ).length;
+          const dupHtml = dupCount
+            ? `<div class="alert" style="margin-top:-4px;background:#1a1400;border-color:#8b5d00;color:#ffe8b3">⚠️ ${dupCount} duplicate Jira ID(s) in this week</div>`
+            : "";
+          return `
+      <div class="week" data-week="${week}">
+        <div class="week-header">
+          <div class="week-title">Week ${week} <span class="tiny">(${byWeek[week].length} tasks)</span></div>
+          <div class="week-actions">
+            <button class="btn add-row" data-week="${week}" title="Add a new task to this week">+ Add Row</button>
+            <button class="btn btn-danger clear-week" data-week="${week}" title="Remove all tasks from this week">Clear Week</button>
+          </div>
+        </div>
+        ${alertHtml}
+        ${dupHtml}
+        <div class="rows">${realRows}${ghosts}</div>
+      </div>`;
+        }).join("");
+
+        gridEl
+          .querySelectorAll(".task:not(.ghost) input, .task:not(.ghost) select")
+          .forEach((el) => {
+            el.addEventListener("change", onTaskFieldChange);
+          });
+        gridEl
+          .querySelectorAll('[data-action="delete"]:not([disabled])')
+          .forEach((btn) => {
+            btn.addEventListener("click", onDeleteTask);
+          });
+        gridEl.querySelectorAll(".add-row").forEach((btn) => {
+          btn.addEventListener("click", () =>
+            addEmptyTask(Number(btn.dataset.week))
+          );
+        });
+        gridEl
+          .querySelectorAll(".task.ghost input, .task.ghost select")
+          .forEach((el) => {
+            el.addEventListener("change", onGhostFieldChange, { once: false });
+          });
+        gridEl.querySelectorAll(".clear-week").forEach((btn) => {
+          btn.addEventListener("click", () =>
+            clearWeek(Number(btn.dataset.week))
+          );
+        });
+
+        // pills
+        document.querySelectorAll(".filter-pill").forEach((p) => {
+          p.classList.toggle(
+            "active",
+            p.dataset.indicator === state.indicatorFilter
+          );
+          p.onclick = () => {
+            state.indicatorFilter =
+              state.indicatorFilter === p.dataset.indicator
+                ? "all"
+                : p.dataset.indicator;
+            fullRender();
+          };
+        });
+
+        undoCloseBtn.disabled = !state._undoSnapshot;
+      }
+
+      function renderStats() {
+        const monthTasks = state.tasks.filter(
+          (t) => t.month === state.currentMonth
+        );
+        const done = monthTasks.filter((t) => t.status === "Done").length;
+        const all = monthTasks.length || 1;
+        statCompletion.textContent = `${Math.round((done * 100) / all)}%`;
+
+        const pri = { High: 0, Medium: 0, Low: 0 };
+        monthTasks
+          .filter((t) => t.status === "Done")
+          .forEach((t) => pri[t.priority]++);
+        statPriority.textContent = `H:${pri.High} · M:${pri.Medium} · L:${pri.Low}`;
+
+        const byBoard = {};
+        monthTasks
+          .filter((t) => t.status === "Done")
+          .forEach((t) => {
+            byBoard[t.board] = (byBoard[t.board] || 0) + 1;
+          });
+        const topBoards = Object.entries(byBoard)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 3);
+        statBoard.textContent = topBoards.length
+          ? topBoards.map(([b, n]) => `${b}:${n}`).join(" · ")
+          : "-";
+
+        const wk = { 1: 0, 2: 0, 3: 0, 4: 0 };
+        monthTasks
+          .filter((t) => t.status === "Done" && WEEKS.includes(t.plannedWeek))
+          .forEach((t) => wk[t.plannedWeek]++);
+        statWeek.textContent = `W1:${wk[1]} · W2:${wk[2]} · W3:${wk[3]} · W4:${wk[4]}`;
+      }
+
+      function fullRender() {
+        ensureBoardOptions();
+        renderWeeks();
+        renderStats();
+        persist();
+      }
+
+      /* ===== Task ops ===== */
+      function addEmptyTask(week = 1, silent = false) {
+        const t = {
+          id: crypto.randomUUID(),
+          title: "",
+          dev: "",
+          board: "",
+          priority: "",
+          status: "",
+          createdAt: new Date(),
+          plannedWeek: week,
+          rolloverStatus: "none",
+          month: state.currentMonth,
+          history: [{ timestamp: new Date(), change: `Created in W${week}` }],
+        };
+        state.tasks.push(t);
+        if (!silent) fullRender();
+        return t;
+      }
+
+      function onGhostFieldChange(e) {
+        const ghost = e.target.closest(".task.ghost");
+        const week = Number(
+          ghost?.dataset.week || ghost?.closest(".week")?.dataset.week || 1
+        );
+        const field = e.target.dataset.field;
+        let val = e.target.value;
+
+        const t = addEmptyTask(week, true);
+
+        if (field === "board" && val === "__add__") {
+          const name = addBoardFlow(t);
+          if (!name) {
+            state.tasks = state.tasks.filter((x) => x.id !== t.id);
+            fullRender();
+            return;
+          }
+          t.board = name;
+        } else {
+          t[field] = val;
+        }
+
+        fullRender();
+      }
+
+      function onTaskFieldChange(e) {
+        const taskEl = e.target.closest(".task");
+        const id = taskEl.dataset.id;
+        const task = state.tasks.find((t) => t.id === id);
+        if (!task) return;
+
+        const field = e.target.dataset.field;
+        let val = e.target.value;
+
+        if (field === "board" && val === "__add__") {
+          const name = addBoardFlow(task);
+          const sel = taskEl.querySelector('[data-field="board"]');
+          sel.value = name || task.board || "";
+          return;
+        }
+
+        task[field] = val;
+        task.history.push({
+          timestamp: new Date(),
+          change: `${field} -> ${val}`,
+        });
+        fullRender();
+      }
+
+      function onDeleteTask(e) {
+        const id = e.target.closest(".task").dataset.id;
+        state.tasks = state.tasks.filter((t) => t.id !== id);
+        fullRender();
+      }
+
+      function clearWeek(week) {
+        const count = state.tasks.filter(
+          (t) => t.month === state.currentMonth && t.plannedWeek === week
+        ).length;
+        if (!count) {
+          console.log(`Week ${week}: nothing to clear`);
+          return;
+        }
+        const ok = confirm(
+          `Clear Week ${week}? This will remove ${count} task(s) from this week (current month).`
+        );
+        if (!ok) return;
+        console.log(`Clearing Week ${week}: removing ${count} tasks`);
+        state.tasks = state.tasks.filter(
+          (t) => !(t.month === state.currentMonth && t.plannedWeek === week)
+        );
+        fullRender();
+      }
+
+      /* ===== Fair scheduler with capacity + anti-starvation ===== */
+      function sortByPriorityThenAgeWithBoost(arr) {
+        arr.sort((a, b) => {
+          const pa = priorityRankWithBoost(a) || 0,
+            pb = priorityRankWithBoost(b) || 0;
+          if (pb !== pa) return pb - pa;
+          const ageA = a.createdAt ? a.createdAt.getTime() : 0;
+          const ageB = b.createdAt ? b.createdAt.getTime() : 0;
+          return ageA - ageB; // older first
+        });
+        return arr;
+      }
+      function groupByBoardSorted(tasks) {
+        const map = new Map();
+        for (const t of tasks) {
+          const key = t.board || "General";
+          if (!map.has(key)) map.set(key, []);
+          map.get(key).push(t);
+        }
+        for (const [k, arr] of map) {
+          sortByPriorityThenAgeWithBoost(arr);
+        }
+        return map;
+      }
+      function rrPick(map) {
+        for (const [k, arr] of map) {
+          if (arr.length) return arr.shift();
+        }
+        return null;
+      }
+      function mapSize(map) {
+        let n = 0;
+        for (const [, arr] of map) n += arr.length;
+        return n;
+      }
+      function flatten(map) {
+        const out = [];
+        for (const [, arr] of map) out.push(...arr);
+        return out;
+      }
+      function pts(t) {
+        return POINTS[t.priority || ""] || 0;
+      }
+      const useDev = (d) => (d || "").trim() || "Unassigned";
+
+      /* Simulation for preview (2) */
+      function simulateCloseWeek(k) {
+        if (k < 1 || k > 3) return null;
+
+        const monthTasks = state.tasks.filter(
+          (t) => t.month === state.currentMonth && t.status !== "Done"
+        );
+
+        const wk = monthTasks.filter((t) => t.plannedWeek === k);
+        const wNext = monthTasks.filter((t) => t.plannedWeek === k + 1);
+        const wNext2 =
+          k <= 2 ? monthTasks.filter((t) => t.plannedWeek === k + 2) : [];
+        const wNext3 =
+          k === 1 ? monthTasks.filter((t) => t.plannedWeek === k + 3) : [];
+
+        const cand = [...wk, ...wNext];
+        const byBoard = groupByBoardSorted(cand);
+
+        const devLoad = {}; // planned for W(k+1)
+        const capCache = {}; // dev -> cap for W(k+1)
+        const canPlace = (t) => {
+          const dev = useDev(t.dev);
+          const cap =
+            capCache[dev] != null
+              ? capCache[dev]
+              : (capCache[dev] = getDevCap(dev, k + 1));
+          const used = devLoad[dev] || 0;
+          return used + pts(t) <= cap;
+        };
+        const place = (t) => {
+          const dev = useDev(t.dev);
+          devLoad[dev] = (devLoad[dev] || 0) + pts(t);
+        };
+
+        const nextWeek = [];
+        while (nextWeek.length < MAX_PER_WEEK && mapSize(byBoard) > 0) {
+          const picked = rrPick(byBoard);
+          if (!picked) break;
+          if (canPlace(picked)) {
+            nextWeek.push(picked);
+            place(picked);
+          } else {
+            picked.__sim_overflow = true;
+          }
+        }
+
+        const notSelected = flatten(byBoard).map(
+          (t) => ((t.__sim_overflow = true), t)
+        );
+
+        let poolAfter = [];
+        if (k === 1) {
+          poolAfter = sortByPriorityThenAgeWithBoost([
+            ...notSelected,
+            ...wNext2,
+            ...wNext3,
+          ]);
+        } else if (k === 2) {
+          poolAfter = sortByPriorityThenAgeWithBoost([
+            ...notSelected,
+            ...wNext2,
+          ]);
+        } else {
+          poolAfter = sortByPriorityThenAgeWithBoost([...notSelected]);
+        }
+
+        const afterByBoard = groupByBoardSorted(poolAfter);
+        const weekAfter = [];
+        const weekAfter2 = [];
+        while (weekAfter.length < MAX_PER_WEEK && mapSize(afterByBoard) > 0) {
+          const t = rrPick(afterByBoard);
+          if (!t) break;
+          weekAfter.push(t);
+        }
+        if (k === 1) {
+          while (
+            weekAfter2.length < MAX_PER_WEEK &&
+            mapSize(afterByBoard) > 0
+          ) {
+            const t = rrPick(afterByBoard);
+            if (!t) break;
+            weekAfter2.push(t);
+          }
+        }
+
+        return {
+          k,
+          nextWeek,
+          weekAfter,
+          weekAfter2,
+          overflow: notSelected,
+          devLoadNext: devLoad,
+          capCache,
+        };
+      }
+
+      /* Apply simulation (2) */
+      function applyClose(sim) {
+        const { k, nextWeek, weekAfter, weekAfter2, overflow } = sim;
+        // snapshot for undo
+        state._undoSnapshot = JSON.stringify(state);
+        undoCloseBtn.disabled = false;
+
+        const idsNext = new Set(nextWeek.map((t) => t.id));
+        const idsAfter = new Set(weekAfter.map((t) => t.id));
+        const idsAfter2 = new Set(weekAfter2.map((t) => t.id));
+
+        const monthAll = state.tasks.filter(
+          (t) => t.month === state.currentMonth && t.status !== "Done"
+        );
+        for (const t of monthAll) {
+          if (idsNext.has(t.id)) {
+            t.plannedWeek = k + 1;
+            t.rolloverStatus = t.plannedWeek === k ? "green" : "none";
+            t.history?.push?.({
+              timestamp: new Date(),
+              change: `Moved to W${k + 1} (${
+                t.rolloverStatus === "green" ? "rollover" : "kept"
+              })`,
+            });
+          } else if (idsAfter2.has(t.id)) {
+            t.plannedWeek = k + 3;
+            t.rolloverStatus = "red";
+            t.history?.push?.({
+              timestamp: new Date(),
+              change: `Moved to W${k + 3} (overflow)`,
+            });
+          } else if (idsAfter.has(t.id)) {
+            t.plannedWeek = k + 2;
+            t.rolloverStatus = "red";
+            t.history?.push?.({
+              timestamp: new Date(),
+              change: `Moved to W${k + 2} (overflow)`,
+            });
+          } else {
+            // if leftover in current week after close (k===3 case), mark overflow
+            if (t.plannedWeek === k) {
+              t.rolloverStatus = "red";
+              t.history?.push?.({
+                timestamp: new Date(),
+                change: `Stayed in W${k} (overflow)`,
+              });
+            }
+          }
+        }
+        fullRender();
+      }
+
+      /* ===== Month ops & CSV ===== */
+      function closeMonth() {
+        const monthTasks = state.tasks.filter(
+          (t) => t.month === state.currentMonth
+        );
+        state.historyByMonth[state.currentMonth] = {
+          savedAt: new Date(),
+          tasks: monthTasks.map((t) => ({ ...t })),
+        };
+        const unfinished = monthTasks.filter((t) => t.status !== "Done");
+        const nextMonthName = getNextMonthName(state.currentMonth);
+        unfinished.forEach((t) => {
+          const nt = {
+            ...t,
+            id: crypto.randomUUID(),
+            month: nextMonthName,
+            plannedWeek: 1,
+            rolloverStatus: "green",
+            history: [
+              {
+                timestamp: new Date(),
+                change: `Carried into ${nextMonthName} as W1`,
+              },
+            ],
+          };
+          state.tasks.push(nt);
+        });
+        fullRender();
+      }
+      function getNextMonthName(m) {
+        const [name, yearStr] = m.split(" ");
+        const idx = [
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December",
+        ].indexOf(name);
+        let y = Number(yearStr);
+        let nextIdx = idx + 1;
+        if (nextIdx > 11) {
+          nextIdx = 0;
+          y++;
+        }
+        const n = [
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December",
+        ][nextIdx];
+        return `${n} ${y}`;
+      }
+      function exportCSV(onlyDone = false) {
+        const headers = [
+          "id",
+          "title",
+          "dev",
+          "board",
+          "priority",
+          "status",
+          "plannedWeek",
+          "createdAt",
+          "month",
+          "indicator",
+        ];
+        const rows = state.tasks
+          .filter((t) => t.month === state.currentMonth)
+          .filter((t) => !onlyDone || t.status === "Done")
+          .map((t) => [
+            t.id,
+            (t.title || "").replace(/"/g, '""'),
+            (t.dev || "").replace(/"/g, '""'),
+            (t.board || "").replace(/"/g, '""'),
+            t.priority,
+            t.status,
+            t.plannedWeek,
+            toISODate(t.createdAt),
+            t.month,
+            t.rolloverStatus,
+          ]);
+        const csv = [
+          headers.join(","),
+          ...rows.map((r) => r.map((v) => `"${v}"`).join(",")),
+        ].join("\n");
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `backlog_${state.currentMonth.replace(/\s+/g, "_")}${
+          onlyDone ? "_done" : ""
+        }.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+      function toISODate(d) {
+        const pad = (n) => String(n).padStart(2, "0");
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(
+          d.getDate()
+        )}`;
+      }
+
+      /* ===== Overflow Review Modal ===== */
+      const overflowOverlay = document.getElementById("overflowOverlay");
+      const overflowList = document.getElementById("overflowList");
+      document
+        .getElementById("overflowReviewBtn")
+        .addEventListener("click", openOverflowReview);
+      document
+        .getElementById("closeOverflow")
+        .addEventListener(
+          "click",
+          () => (overflowOverlay.style.display = "none")
+        );
+
+      function openOverflowReview() {
+        const items = state.tasks
+          .filter(
+            (t) => t.month === state.currentMonth && t.rolloverStatus === "red"
+          )
+          .slice()
+          .sort((a, b) => {
+            const pr =
+              (PRIORITY_RANK[b.priority] || 0) -
+              (PRIORITY_RANK[a.priority] || 0);
+            if (pr) return pr;
+            const ta = (a.createdAt || 0).getTime?.() || 0,
+              tb = (b.createdAt || 0).getTime?.() || 0;
+            return ta - tb; // older first
+          });
+
+        if (!items.length) {
+          overflowList.innerHTML = `<div class="danger">No overflow tasks for this month 🎉</div>`;
+        } else {
+          overflowList.innerHTML = items
+            .map(
+              (t) => `
+      <div class="row" data-id="${esc(t.id)}" style="margin-bottom:6px">
+        <input type="text" value="${esc(
+          t.title || ""
+        )}" data-edit="title" placeholder="Jira ID"/>
+        <input type="text" value="${esc(
+          t.dev || ""
+        )}" data-edit="dev" placeholder="Dev"/>
+        <select data-edit="board">
+          ${state.boards
+            .map(
+              (b) =>
+                `<option value="${esc(b)}"${
+                  t.board === b ? " selected" : ""
+                }>${esc(b)}</option>`
+            )
+            .join("")}
+        </select>
+        <select data-edit="priority">
+          <option${t.priority === "High" ? " selected" : ""}>High</option>
+          <option${t.priority === "Medium" ? " selected" : ""}>Medium</option>
+          <option${t.priority === "Low" ? " selected" : ""}>Low</option>
+        </select>
+        <select data-edit="plannedWeek">
+          ${WEEKS.map(
+            (w) =>
+              `<option value="${w}"${
+                t.plannedWeek === w ? " selected" : ""
+              }>W${w}</option>`
+          ).join("")}
+        </select>
+        <div>
+          <button class="btn btn-tiny" data-act="save">Save</button>
+        </div>
+      </div>
+    `
+            )
+            .join("");
+        }
+
+        overflowList.querySelectorAll('[data-act="save"]').forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const row = btn.closest(".row");
+            const id = row.dataset.id;
+            const task = state.tasks.find((x) => x.id === id);
+            if (!task) return;
+            row.querySelectorAll("[data-edit]").forEach((el) => {
+              const k = el.dataset.edit;
+              let v = el.value;
+              if (k === "plannedWeek") v = Number(v);
+              task[k] = v;
+            });
+            task.history?.push?.({
+              timestamp: new Date(),
+              change: "Edited in Overflow Review",
+            });
+            persist();
+            fullRender();
+          });
+        });
+
+        overflowOverlay.style.display = "flex";
+      }
+
+      /* ===== Capacity Modal with week overrides (3) ===== */
+      const capacityOverlay = document.getElementById("capacityOverlay");
+      const capacityList = document.getElementById("capacityList");
+      const capWeekSelect = document.getElementById("capWeekSelect");
+      document
+        .getElementById("manageCapacityBtn")
+        .addEventListener("click", openCapacityModal);
+      document
+        .getElementById("closeCapacity")
+        .addEventListener(
+          "click",
+          () => (capacityOverlay.style.display = "none")
+        );
+      document
+        .getElementById("addDevRow")
+        .addEventListener("click", () => addCapacityRow("", ""));
+      document
+        .getElementById("saveCapacity")
+        .addEventListener("click", saveCapacity);
+
+      function openCapacityModal() {
+        capacityList.innerHTML = "";
+        // existing devs
+        const devs = new Set(Object.keys(state.devCapacity));
+        state.tasks
+          .filter((t) => t.month === state.currentMonth)
+          .forEach((t) => devs.add((t.dev || "").trim() || "Unassigned"));
+        if (!devs.size) {
+          devs.add("Unassigned");
+        }
+        // rows
+        const target = capWeekSelect.value;
+        if (target === "all") {
+          addCapacityRow(
+            "*default*",
+            Number(state.devCapacity["*default*"] ?? 10)
+          );
+          for (const d of devs) {
+            if (d === "*default*") continue;
+            addCapacityRow(d, Number(state.devCapacity[d] ?? ""));
+          }
+        } else {
+          const w = Number(target);
+          const ov = state.devCapacityOverrides[state.currentMonth]?.[w] || {};
+          addCapacityRow(
+            "*default*",
+            Number(ov["*default*"] ?? state.devCapacity["*default*"] ?? 10)
+          );
+          for (const d of devs) {
+            if (d === "*default*") continue;
+            addCapacityRow(d, Number(ov[d] ?? ""));
+          }
+        }
+        capacityOverlay.style.display = "flex";
+      }
+      function addCapacityRow(dev, cap) {
+        const wrap = document.createElement("div");
+        wrap.style.display = "contents";
+        wrap.innerHTML = `
+    <input type="text" placeholder="Dev" value="${esc(dev)}" />
+    <input type="number" min="0" step="1" placeholder="points" value="${esc(
+      cap
+    )}" />
+    <button class="btn btn-ghost delRow">Delete</button>
+  `;
+        capacityList.appendChild(wrap);
+        wrap
+          .querySelector(".delRow")
+          .addEventListener("click", () => wrap.remove());
+      }
+      function saveCapacity() {
+        const rows = capacityList.querySelectorAll(":scope > *");
+        const map = {};
+        for (let i = 0; i < rows.length; i += 3) {
+          const dev = rows[i].querySelector("input")?.value?.trim();
+          const cap = Number(rows[i + 1].querySelector("input")?.value);
+          if (!dev) continue;
+          map[dev] = isFinite(cap) ? cap : undefined;
+        }
+        const target = capWeekSelect.value;
+        if (target === "all") {
+          state.devCapacity = map;
+        } else {
+          const w = Number(target);
+          state.devCapacityOverrides[state.currentMonth] =
+            state.devCapacityOverrides[state.currentMonth] || {};
+          state.devCapacityOverrides[state.currentMonth][w] = map;
+        }
+        persist();
+        fullRender();
+        capacityOverlay.style.display = "none";
+      }
+
+      /* ===== Jira Base (10) ===== */
+      document
+        .getElementById("setJiraBaseBtn")
+        .addEventListener("click", () => {
+          const cur =
+            state.jiraBase || "https://yourcompany.atlassian.net/browse";
+          const next =
+            prompt(
+              "Set Jira base URL (e.g., https://yourcompany.atlassian.net/browse)",
+              cur
+            ) || "";
+          state.jiraBase = next.trim();
+          persist();
+          fullRender();
+        });
+
+      /* ===== Close Week Preview + Undo + Summary (2,9) ===== */
+      const previewOverlay = document.getElementById("previewOverlay");
+      const previewContent = document.getElementById("previewContent");
+      const previewTitle = document.getElementById("previewTitle");
+      const confirmCloseBtn = document.getElementById("confirmCloseBtn");
+      const cancelCloseBtn = document.getElementById("cancelCloseBtn");
+      const copySummaryBtn = document.getElementById("copySummaryBtn");
+
+      let _currentSim = null;
+      document.getElementById("closeWeekBtn").addEventListener("click", () => {
+        const k = Number(closeWeekSelect.value);
+        _currentSim = simulateCloseWeek(k);
+        if (!_currentSim) {
+          alert("Nothing to close.");
+          return;
+        }
+        const md = previewMarkdown(_currentSim, false);
+        previewTitle.textContent = `Close Week ${k} Preview`;
+        previewContent.textContent = md;
+        copySummaryBtn.style.display = "none";
+        confirmCloseBtn.style.display = "inline-block";
+        previewOverlay.style.display = "flex";
+      });
+      cancelCloseBtn.addEventListener("click", () => {
+        previewOverlay.style.display = "none";
+        _currentSim = null;
+      });
+      confirmCloseBtn.addEventListener("click", () => {
+        if (!_currentSim) return;
+        applyClose(_currentSim);
+        // show summary
+        const md = previewMarkdown(_currentSim, true);
+        previewTitle.textContent = `Summary — Week ${_currentSim.k} → ${
+          _currentSim.k + 1
+        }`;
+        previewContent.textContent = md;
+        confirmCloseBtn.style.display = "none";
+        copySummaryBtn.style.display = "inline-block";
+        copySummaryBtn.onclick = () => {
+          navigator.clipboard?.writeText(md);
+          copySummaryBtn.textContent = "Copied!";
+          setTimeout(() => (copySummaryBtn.textContent = "Copy Summary"), 1200);
+        };
+        _currentSim = null;
+      });
+      undoCloseBtn.addEventListener("click", () => {
+        if (!state._undoSnapshot) return;
+        const snap = JSON.parse(state._undoSnapshot);
+        Object.keys(state).forEach((k) => {
+          delete state[k];
+        });
+        Object.assign(state, snap);
+        reviveDates();
+        state._undoSnapshot = null;
+        fullRender();
+      });
+
+      /* Summary / Preview builder (9) */
+      function previewMarkdown(sim, isAfter) {
+        const {
+          k,
+          nextWeek,
+          weekAfter,
+          weekAfter2,
+          overflow,
+          devLoadNext,
+          capCache,
+        } = sim;
+        const cnt = (arr) => (arr ? arr.length : 0);
+        const prCount = (arr) => {
+          const c = { High: 0, Medium: 0, Low: 0 };
+          (arr || []).forEach(
+            (t) => (c[t.priority] = (c[t.priority] || 0) + 1)
+          );
+          return c;
+        };
+        const pr1 = prCount(nextWeek),
+          pr2 = prCount(weekAfter),
+          pr3 = prCount(weekAfter2),
+          pro = prCount(overflow);
+        const devLines =
+          Object.keys(devLoadNext)
+            .sort()
+            .map(
+              (d) =>
+                `- ${d}: ${devLoadNext[d]}/${
+                  capCache[d] ?? getDevCap(d, k + 1)
+                } pts`
+            )
+            .join("\n") || "- none -";
+        return [
+          `**Month:** ${state.currentMonth}`,
+          `**Close:** Week ${k} → Week ${k + 1}`,
+          `**Selected to W${k + 1}:** ${cnt(nextWeek)} (H:${pr1.High || 0} M:${
+            pr1.Medium || 0
+          } L:${pr1.Low || 0})`,
+          `**Overflow → W${k + 2}${k === 1 ? " and W" + (k + 3) : ""}:** ${cnt(
+            overflow
+          )} (H:${pro.High || 0} M:${pro.Medium || 0} L:${pro.Low || 0})`,
+          k === 1
+            ? `• Planned W${k + 2}: ${cnt(weekAfter)} (H:${pr2.High || 0} M:${
+                pr2.Medium || 0
+              } L:${pr2.Low || 0})\n• Planned W${k + 3}: ${cnt(
+                weekAfter2
+              )} (H:${pr3.High || 0} M:${pr3.Medium || 0} L:${pr3.Low || 0})`
+            : k === 2
+            ? `• Planned W${k + 2}: ${cnt(weekAfter)} (H:${pr2.High || 0} M:${
+                pr2.Medium || 0
+              } L:${pr2.Low || 0})`
+            : ``,
+          `**Dev capacity (W${k + 1}):**\n${devLines}`,
+          isAfter
+            ? `\n— _Generated after close for quick paste into Slack_`
+            : `\n— _Preview only; confirm to apply_`,
+        ]
+          .filter(Boolean)
+          .join("\n");
+      }
+
+      /* ===== Events (filters etc.) ===== */
+      document
+        .getElementById("closeMonthBtn")
+        .addEventListener("click", closeMonth);
+      document
+        .getElementById("exportCsvBtn")
+        .addEventListener("click", () => exportCSV(false));
+      document
+        .getElementById("exportDoneCsvBtn")
+        .addEventListener("click", () => exportCSV(true));
+
+      monthSelect.addEventListener("change", () => {
+        state.currentMonth = monthSelect.value;
+        fullRender();
+      });
+      filterBoard.addEventListener("change", () => {
+        state.filters.board = filterBoard.value;
+        fullRender();
+      });
+      filterPriority.addEventListener("change", () => {
+        state.filters.priority = filterPriority.value;
+        fullRender();
+      });
+      filterStatus.addEventListener("change", () => {
+        state.filters.status = filterStatus.value;
+        fullRender();
+      });
+      addBoardBtn.addEventListener("click", () => addBoardFlow());
+
+      /* ===== Bootstrap ===== */
+      function bootstrap() {
+        load();
+        renderMonthSelect();
+        ensureBoardOptions();
+        fullRender();
+      }
+      bootstrap();
+    </script>
+  </body>
+</html>
